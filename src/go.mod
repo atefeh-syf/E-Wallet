@@ -3,6 +3,7 @@ module github.com/atefeh-syf/E-Wallet
 go 1.21.2
 
 require (
+	github.com/gorilla/mux v1.8.1
 	github.com/spf13/viper v1.18.2
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
