@@ -7,5 +7,6 @@ type Wallet struct {
 	Balance     float64 `sql:"type:decimal(64,0);"`
 	Slug        string  `gorm:"column:slug;size:255" json:"slug" form:"slug"`
 	Description string  `gorm:"column:description;size:255" json:"description" form:"description"`
-	User        User    `gorm:"foreignKey:UserId;constraint:OnUpdate:NO ACTION;OnDelete:NO ACTION"`
+	UserId      uint
+	User        User `gorm:"foreignKey:UserId;constraint:OnUpdate:NO ACTION;OnDelete:NO ACTION"`
 }

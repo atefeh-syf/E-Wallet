@@ -15,12 +15,12 @@ var DBClient *gorm.DB
 func InitDB(cfg *config.Config) error {
 	var err error
 	conn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Tehran", 
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Tehran",
 		cfg.Postgres.Host,
 		cfg.Postgres.Port,
 		cfg.Postgres.User,
 		cfg.Postgres.Password,
-		cfg.Postgres.DbName, 
+		cfg.Postgres.DbName,
 		cfg.Postgres.SSLMode,
 	)
 
@@ -38,6 +38,12 @@ func InitDB(cfg *config.Config) error {
 	sqlDb.SetMaxOpenConns(cfg.Postgres.MaxOpenConns)
 	sqlDb.SetConnMaxLifetime(cfg.Postgres.ConnMaxLifetime * time.Minute)
 
+	//migrate tables
+	err = MigrateEntities(dbClient)
+	if err != nil {
+		log.Fatalln(err)
+		return err
+	}
 	log.Println("Db connection established")
 	return nil
 }
