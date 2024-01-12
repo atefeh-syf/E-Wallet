@@ -12,7 +12,7 @@ import (
 
 func InitServer(cfg *config.Config) {
 	RegisterValidators(cfg)
-	router := RegisterRoutes()
+	router := RegisterRoutes(cfg)
 
 	err := http.ListenAndServe(":8000", router)
 	if err != nil {
@@ -20,12 +20,13 @@ func InitServer(cfg *config.Config) {
 	}
 }
 
-func RegisterRoutes() *mux.Router{
+func RegisterRoutes(cfg *config.Config) *mux.Router {
+
 	router := mux.NewRouter().StrictSlash(true).PathPrefix("/api").Subrouter()
 	router = router.PathPrefix("/v1").Subrouter()
-    
-	
-   router.HandleFunc("/", handlers.HomePage).Methods("GET")
+
+	UserHandler := handlers.NewUsersHandler(cfg)
+	router.HandleFunc("/", UserHandler.Login).Methods("POST")
 	return router
 }
 
