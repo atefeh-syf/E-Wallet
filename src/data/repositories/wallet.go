@@ -1,0 +1,69 @@
+package repositories
+
+import (
+	"context"
+	"github.com/atefeh-syf/E-Wallet/api/dto"
+	"github.com/atefeh-syf/E-Wallet/config"
+	"github.com/atefeh-syf/E-Wallet/data/models"
+	"gorm.io/gorm"
+	"sync"
+)
+
+type WalletRepositoryInterface interface {
+	//FindAll() ([]models.Wallet, error)
+	//FindById(id string) (models.Wallet, error)
+	//Create(user models.Wallet) (models.Wallet, error)
+	//Update(id string, user models.Wallet) (models.Wallet, error)
+	//Exists(request requests.WalletRequest)
+	//Count() int64
+}
+
+type WalletRepository struct {
+	cfg         *config.Config
+	DB          *gorm.DB
+	WaitGroup   *sync.WaitGroup
+	Transaction *models.Transaction
+}
+
+func (repo *WalletRepository) FindWalletByUserId(userId int, channel chan models.DBResponse) {
+	defer repo.WaitGroup.Done()
+	wallet := models.Wallet{}
+
+	err := repo.DB.Preload("User").Where("user_id = ?", userId).First(&wallet).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		channel <- models.DBResponse{
+			Data:  wallet,
+			Error: err,
+		}
+	} else {
+		channel <- models.DBResponse{
+			Data:  wallet,
+			Error: nil,
+		}
+	}
+}
+
+// Updates wallet
+func (repo *WalletRepository) UpdateWalletBalance(walletBalanceUpdate *dto.WalletBalanceUpdate, channel chan models.DBResponse) {
+	defer repo.WaitGroup.Done()
+	wallet := walletBalanceUpdate.Wallet
+	ctx := context.Background()
+	tx := repo.DB.WithContext(ctx).Begin()
+	err := tx.Model(&models.Wallet{}).Where("id = ?", wallet.ID).Updates(wallet).Error
+
+	t := models.Transaction{
+		Type:            walletBalanceUpdate.Type,
+		Amount:          walletBalanceUpdate.Amount,
+		PreviousBalance: walletBalanceUpdate.PreviousBalance,
+		Confirmed:       true,
+		UserId:          wallet.UserId,
+		WalletId:        wallet.ID,
+	}
+	err = repo.DB.Create(&t).Error
+	tx.Commit()
+	channel <- models.DBResponse{
+		Data:  wallet,
+		Error: err,
+	}
+}

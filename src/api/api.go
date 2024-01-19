@@ -2,10 +2,10 @@ package api
 
 import (
 	"fmt"
+	"github.com/atefeh-syf/E-Wallet/api/handlers"
 	"log"
 	"net/http"
 
-	"github.com/atefeh-syf/E-Wallet/api/handlers"
 	"github.com/atefeh-syf/E-Wallet/config"
 	"github.com/gorilla/mux"
 )
@@ -25,8 +25,11 @@ func RegisterRoutes(cfg *config.Config) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true).PathPrefix("/api").Subrouter()
 	router = router.PathPrefix("/v1").Subrouter()
 
-	UserHandler := handlers.NewUsersHandler(cfg)
-	router.HandleFunc("/", UserHandler.Login).Methods("POST")
+	WalletHandler := handlers.WalletHandler{}
+	router.HandleFunc("/", WalletHandler.Deposit).Methods("POST")
+	router.HandleFunc("/", WalletHandler.Withdraw).Methods("POST")
+	router.HandleFunc("/", WalletHandler.ForceWithdraw).Methods("POST")
+
 	return router
 }
 

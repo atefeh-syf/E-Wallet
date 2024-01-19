@@ -93,7 +93,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: e-wallet_sale_db
+      POSTGRES_DB: wallet_db
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
@@ -107,7 +107,7 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin_container
     environment:
-      PGADMIN_DEFAULT_EMAIL: h.naimaei@gmail.com
+      PGADMIN_DEFAULT_EMAIL: atefeh.syf@gmail.com
       PGADMIN_DEFAULT_PASSWORD: 123456
     volumes:
       - pgadmin:/var/lib/pgadmin

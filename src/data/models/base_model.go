@@ -43,3 +43,8 @@ func (m *BaseModel) beforeDelete(tx *gorm.DB) (err error) {
 	m.DeletedBy = userId
 	return
 }
+
+type DBResponse struct {
+	Data  interface{}
+	Error error
+}
