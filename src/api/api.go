@@ -14,7 +14,7 @@ func InitServer(cfg *config.Config) {
 	RegisterValidators(cfg)
 	router := RegisterRoutes(cfg)
 
-	err := http.ListenAndServe(":8000", router)
+	err := http.ListenAndServe(":8001", router)
 	if err != nil {
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Server.InternalPort), router))
 	}
@@ -26,9 +26,10 @@ func RegisterRoutes(cfg *config.Config) *mux.Router {
 	router = router.PathPrefix("/v1").Subrouter()
 
 	WalletHandler := handlers.WalletHandler{}
-	router.HandleFunc("/", WalletHandler.Deposit).Methods("POST")
-	router.HandleFunc("/", WalletHandler.Withdraw).Methods("POST")
-	router.HandleFunc("/", WalletHandler.ForceWithdraw).Methods("POST")
+	//router.HandleFunc("/wallet/:{user_id}", WalletHandler.GetWalletByUserId).Methods("GET")
+	router.HandleFunc("/wallet/deposit", WalletHandler.Deposit).Methods("POST")
+	router.HandleFunc("/wallet/withdraw", WalletHandler.Withdraw).Methods("POST")
+	router.HandleFunc("/wallet/force-withdraw", WalletHandler.ForceWithdraw).Methods("POST")
 
 	return router
 }

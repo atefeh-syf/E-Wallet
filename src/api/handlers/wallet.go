@@ -85,3 +85,29 @@ func (h *WalletHandler) ForceWithdraw(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
+
+func (h *WalletHandler) GetWalletByUserId(w http.ResponseWriter, r *http.Request) {
+	req := new(dto.UserWallet)
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	s := services.GetWalletService()
+	result, err := s.FindWalletByUserId(req.UserId)
+	//r, err = json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Convert the result to JSON
+	res, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+	//w.Write(helper.GenerateBaseResponse(res, true, helper.Success))
+}

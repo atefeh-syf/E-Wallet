@@ -7,6 +7,9 @@ type TransactionAction struct {
 	UserId int     `json:"user_id" binding:"required,min=1"`
 }
 
+type UserWallet struct {
+	UserId int `json:"user_id" binding:"required,min=1"`
+}
 type WalletBalanceUpdate struct {
 	Amount          float64
 	PreviousBalance float64
