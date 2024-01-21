@@ -6,13 +6,12 @@ import (
 	"github.com/atefeh-syf/E-Wallet/data/db"
 )
 
-
 func main() {
 	cfg := config.GetConfig()
 	// err := db.InitDB(cfg)
 	// if err != nil {
-		
+
 	// }
-	_ = db.InitDB(cfg)
+	_ = db.InitDb(cfg)
 	api.InitServer(cfg)
 }

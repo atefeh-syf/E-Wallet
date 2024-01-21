@@ -2,57 +2,45 @@ package db
 
 import (
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/atefeh-syf/E-Wallet/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"time"
 )
 
-var DBClient *gorm.DB
+var dbClient *gorm.DB
 
-func InitDB(cfg *config.Config) error {
+func InitDb(cfg *config.Config) error {
 	var err error
-	conn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Tehran",
-		cfg.Postgres.Host,
-		cfg.Postgres.Port,
-		cfg.Postgres.User,
-		cfg.Postgres.Password,
-		cfg.Postgres.DbName,
-		cfg.Postgres.SSLMode,
-	)
+	cnn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=Asia/Tehran",
+		cfg.Postgres.Host, cfg.Postgres.Port, cfg.Postgres.User, cfg.Postgres.Password,
+		cfg.Postgres.DbName, cfg.Postgres.SSLMode)
 
-	dbClient, err := gorm.Open(postgres.Open(conn), &gorm.Config{})
+	dbClient, err = gorm.Open(postgres.Open(cnn), &gorm.Config{})
 	if err != nil {
 		return err
 	}
 
-	sqlDb, err := dbClient.DB()
+	sqlDb, _ := dbClient.DB()
 	err = sqlDb.Ping()
 	if err != nil {
 		return err
 	}
-	sqlDb.SetMaxIdleConns(cfg.Postgres.MaxIdleConns)
-	sqlDb.SetMaxOpenConns(cfg.Postgres.MaxOpenConns)
-	sqlDb.SetConnMaxLifetime(cfg.Postgres.ConnMaxLifetime * time.Minute)
 
-	//migrate tables
-	err = MigrateEntities(dbClient)
-	if err != nil {
-		log.Fatalln(err)
-		return err
-	}
+	sqlDb.SetMaxIdleConns(15)
+	sqlDb.SetMaxOpenConns(100)
+	sqlDb.SetConnMaxLifetime(5 * time.Minute)
+
 	log.Println("Db connection established")
 	return nil
 }
 
 func GetDb() *gorm.DB {
-	return DBClient
+	return dbClient
 }
 
 func CloseDb() {
-	conn, _ := DBClient.DB()
-	conn.Close()
+	con, _ := dbClient.DB()
+	con.Close()
 }

@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 	"github.com/atefeh-syf/E-Wallet/api/dto"
-	"github.com/atefeh-syf/E-Wallet/config"
+	"github.com/atefeh-syf/E-Wallet/data/db"
 	"github.com/atefeh-syf/E-Wallet/data/models"
 	"gorm.io/gorm"
 	"sync"
@@ -19,17 +19,22 @@ type WalletRepositoryInterface interface {
 }
 
 type WalletRepository struct {
-	cfg         *config.Config
-	DB          *gorm.DB
-	WaitGroup   *sync.WaitGroup
-	Transaction *models.Transaction
+	DB        *gorm.DB
+	WaitGroup *sync.WaitGroup
+}
+
+func NewWalletRepository() *WalletRepository {
+	return &WalletRepository{
+		DB:        db.GetDb(),
+		WaitGroup: &sync.WaitGroup{},
+	}
 }
 
 func (repo *WalletRepository) FindWalletByUserId(userId int, channel chan models.DBResponse) {
 	defer repo.WaitGroup.Done()
 	wallet := models.Wallet{}
 
-	err := repo.DB.Preload("User").Where("user_id = ?", userId).First(&wallet).Error
+	err := repo.DB.Where("user_id = ?", userId).First(&wallet).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		channel <- models.DBResponse{

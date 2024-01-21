@@ -26,7 +26,7 @@ func RegisterRoutes(cfg *config.Config) *mux.Router {
 	router = router.PathPrefix("/v1").Subrouter()
 
 	WalletHandler := handlers.WalletHandler{}
-	//router.HandleFunc("/wallet/:{user_id}", WalletHandler.GetWalletByUserId).Methods("GET")
+	router.HandleFunc("/wallet/{user_id}", WalletHandler.GetWalletByUserId).Methods("GET")
 	router.HandleFunc("/wallet/deposit", WalletHandler.Deposit).Methods("POST")
 	router.HandleFunc("/wallet/withdraw", WalletHandler.Withdraw).Methods("POST")
 	router.HandleFunc("/wallet/force-withdraw", WalletHandler.ForceWithdraw).Methods("POST")

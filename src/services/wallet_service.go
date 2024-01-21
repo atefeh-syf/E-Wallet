@@ -12,15 +12,12 @@ type WalletService struct {
 	WaitGroup  *sync.WaitGroup
 }
 
-var walletService *WalletService
-
-// Init new service
-func NewWalletService(walletRepo *repositories.WalletRepository) {
-	walletService = &WalletService{Repository: walletRepo, WaitGroup: walletRepo.WaitGroup}
-}
-
-func GetWalletService() *WalletService {
-	return walletService
+func NewWalletService() *WalletService {
+	WalletRepository := repositories.NewWalletRepository()
+	return &WalletService{
+		Repository: WalletRepository,
+		WaitGroup:  WalletRepository.WaitGroup,
+	}
 }
 
 func (s *WalletService) Deposit(req *dto.TransactionAction) (*dto.TransactionResult, error) {
