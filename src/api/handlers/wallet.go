@@ -73,7 +73,7 @@ func (h *WalletHandler) ForceWithdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s := services.NewWalletService()
-	result, err := s.Withdraw(req)
+	result, err := s.ForceWithdraw(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
