@@ -8,7 +8,6 @@ import (
 // Migrate Entity Here
 func MigrateEntities(db *gorm.DB) error {
 	return db.AutoMigrate(
-		&models.User{},
 		&models.Wallet{},
 		&models.Transaction{},
 	)

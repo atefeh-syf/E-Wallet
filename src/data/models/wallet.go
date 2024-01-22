@@ -8,5 +8,4 @@ type Wallet struct {
 	Slug        string  `gorm:"column:slug;size:255" json:"slug" form:"slug"`
 	Description string  `gorm:"column:description;size:255" json:"description" form:"description"`
 	UserId      uint
-	User        User `gorm:"foreignKey:UserId;constraint:OnUpdate:NO ACTION;OnDelete:NO ACTION"`
 }
