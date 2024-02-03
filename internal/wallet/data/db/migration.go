@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/atefeh-syf/E-Wallet/data/models"
+	"github.com/atefeh-syf/yumigo/internal/wallet/data/models"
 	"gorm.io/gorm"
 )
 

@@ -7,5 +7,6 @@ import (
 )
 
 type Service interface {
-    Get(ctx context.Context, filters ...internal.Filter) (internal.Wallet, error)
+    Get(ctx context.Context, userId string ,filters ...internal.Filter) (internal.Wallet, error)
+	ServiceStatus(ctx context.Context) (int, error)
 }

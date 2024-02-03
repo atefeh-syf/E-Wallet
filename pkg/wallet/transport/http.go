@@ -3,18 +3,26 @@ package transport
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/atefeh-syf/yumigo/internal/util"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/endpoints"
-	"github.com/go-kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
+	"github.com/go-kit/log"
 )
 
 func NewHTTPHandler(ep endpoints.Set) http.Handler {
 	m := http.NewServeMux()
-	m.Handle("/wallet", httptransport.NewServer(
+	m.Handle("/healthz", httptransport.NewServer(
+		ep.ServiceStatusEndpoint,
+		decodeHTTPServiceStatusRequest,
+		encodeResponse,
+	))
+
+	m.Handle("/wallet/", httptransport.NewServer(
 		ep.GetEndpoint,
 		decodeHTTPGetRequest,
 		encodeResponse,
@@ -24,7 +32,16 @@ func NewHTTPHandler(ep endpoints.Set) http.Handler {
 }
 
 func decodeHTTPGetRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	re := regexp.MustCompile(`/wallet/(\d+)`)
+	matches := re.FindStringSubmatch(r.URL.Path)
+	var userID string
+	if len(matches) == 2 {
+		userID = matches[1]
+	} else {
+		return nil, errors.New("Not Found user")
+	}
 	var req endpoints.GetRequest
+	req.UserId = userID
 	if r.ContentLength == 0 {
 		logger.Log("Get request with no body")
 		return req, nil
@@ -57,6 +74,11 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"error": err.Error(),
 	})
+}
+
+func decodeHTTPServiceStatusRequest(_ context.Context, _ *http.Request) (interface{}, error) {
+	var req endpoints.ServiceStatusRequest
+	return req, nil
 }
 
 var logger log.Logger

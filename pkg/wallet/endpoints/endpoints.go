@@ -13,23 +13,36 @@ import (
 
 type Set struct {
     GetEndpoint           endpoint.Endpoint
+    ServiceStatusEndpoint endpoint.Endpoint
 }
 
 func NewEndpointSet(svc wallet.Service) Set {
     return Set{
         GetEndpoint:           MakeGetEndpoint(svc),
+        ServiceStatusEndpoint: MakeServiceStatusEndpoint(svc),
     }
 }
 
 func MakeGetEndpoint(svc wallet.Service) endpoint.Endpoint {
     return func(ctx context.Context, request interface{}) (interface{}, error) {
-        req := request.(GetRequest)
-        docs, err := svc.Get(ctx, req.Filters...)
+            req := request.(GetRequest)
+        docs, err := svc.Get(ctx, req.UserId, req.Filters...)
         if err != nil {
             return GetResponse{docs, err.Error()}, nil
         }
         return GetResponse{docs, ""}, nil
     }
+}
+
+func MakeServiceStatusEndpoint(svc wallet.Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		_ = request.(ServiceStatusRequest)
+		code, err := svc.ServiceStatus(ctx)
+		if err != nil {
+			return ServiceStatusResponse{Code: code, Err: err.Error()}, nil
+		}
+		return ServiceStatusResponse{Code: code, Err: ""}, nil
+	}
 }
 
 func (s *Set) Get(ctx context.Context, filters ...internal.Filter) (internal.Wallet, error) {

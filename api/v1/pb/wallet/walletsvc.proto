@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package pb;
+
+service Watermark {
+    rpc Get (GetRequest) returns (GetReply) {}
+
+    rpc Watermark (WatermarkRequest) returns (WatermarkReply) {}
+
+    rpc Status (StatusRequest) returns (StatusReply) {}
+
+    rpc AddWallet (AddWalletRequest) returns (AddWalletReply) {}
+
+    rpc ServiceStatus (ServiceStatusRequest) returns (ServiceStatusReply) {}
+}
+
+message GetRequest {
+    message Filters {
+        string key = 1;
+        string value = 2;
+    }
+    repeated Filters filters = 1;
+}
+
+message GetReply {
+    repeated Wallet wallets = 1;
+    string Err = 2;
+}
+
+message StatusRequest {
+    string ticketID = 1;
+}
