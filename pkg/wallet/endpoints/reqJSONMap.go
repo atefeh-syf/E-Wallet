@@ -1,7 +1,9 @@
 package endpoints
 
-import "github.com/atefeh-syf/yumigo/internal"
-
+import (
+    "github.com/atefeh-syf/yumigo/internal"
+    "github.com/atefeh-syf/yumigo/internal/wallet/data/models"
+)
 
 type GetRequest struct {
     UserId string  `json:"user_id,omitempty"`
@@ -9,7 +11,7 @@ type GetRequest struct {
 }
 
 type GetResponse struct {
-    Wallet internal.Wallet `json:"wallets"`
+    Wallet models.Wallet `json:"wallets"`
     Err       string              `json:"err,omitempty"`
 }
 

@@ -27,6 +27,7 @@ func NewWalletService() *WalletService {
 	}
 }
 
+
 func (w *WalletService) ServiceStatus(_ context.Context) (int, error) {
 	logger.Log("Checking the Service health...")
 	return http.StatusOK, nil

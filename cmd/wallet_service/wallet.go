@@ -9,9 +9,12 @@ import (
 	"syscall"
 
 	//pb "github.com/atefeh-syf/yumigo/api/v1/pb/wallet"
+	"github.com/atefeh-syf/yumigo/config"
+	"github.com/atefeh-syf/yumigo/internal/wallet/data/db"
 	"github.com/atefeh-syf/yumigo/pkg/wallet"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/endpoints"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/transport"
+
 	//kitgrpc "github.com/go-kit/kit/transport/grpc"
 	"github.com/go-kit/log"
 	//"github.com/oklog/oklog/pkg/group"
@@ -28,11 +31,12 @@ func main() {
 		logger   log.Logger
 		httpAddr = net.JoinHostPort("localhost", envString("HTTP_PORT", defaultHTTPPort))
 		//grpcAddr = net.JoinHostPort("localhost", envString("GRPC_PORT", defaultGRPCPort))
+		cfg = config.GetConfig()
 	)
 
 	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
-
+	_ = db.InitDb(cfg)
 	var (
 		service     = wallet.NewWalletService()
 		eps         = endpoints.NewEndpointSet(service)

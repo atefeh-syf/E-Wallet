@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 
+	"os"
+
 	"github.com/atefeh-syf/yumigo/internal"
+	"github.com/atefeh-syf/yumigo/internal/wallet/data/models"
 	"github.com/atefeh-syf/yumigo/pkg/wallet"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/log"
-	"os"
 )
 
 type Set struct {
@@ -25,12 +27,12 @@ func NewEndpointSet(svc wallet.Service) Set {
 
 func MakeGetEndpoint(svc wallet.Service) endpoint.Endpoint {
     return func(ctx context.Context, request interface{}) (interface{}, error) {
-            req := request.(GetRequest)
-        docs, err := svc.Get(ctx, req.UserId, req.Filters...)
+        req := request.(GetRequest)
+        walllet, err := svc.Get(ctx, req.UserId, req.Filters...)
         if err != nil {
-            return GetResponse{docs, err.Error()}, nil
+            return GetResponse{walllet, err.Error()}, nil
         }
-        return GetResponse{docs, ""}, nil
+        return GetResponse{walllet, ""}, nil
     }
 }
 
@@ -45,14 +47,14 @@ func MakeServiceStatusEndpoint(svc wallet.Service) endpoint.Endpoint {
 	}
 }
 
-func (s *Set) Get(ctx context.Context, filters ...internal.Filter) (internal.Wallet, error) {
+func (s *Set) Get(ctx context.Context, filters ...internal.Filter) (models.Wallet, error) {
     resp, err := s.GetEndpoint(ctx, GetRequest{Filters: filters})
     if err != nil {
-        return internal.Wallet{}, err
+        return models.Wallet{}, err
     }
     getResp := resp.(GetResponse)
     if getResp.Err != "" {
-        return internal.Wallet{}, errors.New(getResp.Err)
+        return models.Wallet{}, errors.New(getResp.Err)
     }
     return getResp.Wallet, nil
 }

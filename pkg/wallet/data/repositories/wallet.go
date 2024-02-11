@@ -5,7 +5,7 @@ import (
 
 	"sync"
 
-	"github.com/atefeh-syf/yumigo/internal/wallet/api/dto"
+	"github.com/atefeh-syf/yumigo/pkg/wallet/dto"
 	"github.com/atefeh-syf/yumigo/internal/wallet/data/db"
 	"github.com/atefeh-syf/yumigo/internal/wallet/data/models"
 	"gorm.io/gorm"
