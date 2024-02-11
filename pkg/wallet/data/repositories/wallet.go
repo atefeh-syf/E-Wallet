@@ -5,9 +5,9 @@ import (
 
 	"sync"
 
+	"github.com/atefeh-syf/yumigo/pkg/wallet/data/models"
+	"github.com/atefeh-syf/yumigo/pkg/wallet/data/db"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/dto"
-	"github.com/atefeh-syf/yumigo/internal/wallet/data/db"
-	"github.com/atefeh-syf/yumigo/internal/wallet/data/models"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +27,7 @@ type WalletRepository struct {
 
 func NewWalletRepository() *WalletRepository {
 	return &WalletRepository{
-		DB:       db.GetDb(),
+		DB:        db.GetDb(),
 		WaitGroup: &sync.WaitGroup{},
 	}
 }

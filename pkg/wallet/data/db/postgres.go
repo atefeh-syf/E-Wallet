@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/atefeh-syf/yumigo/internal/wallet/config"
+	"github.com/atefeh-syf/yumigo/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -32,7 +32,7 @@ func InitDb(cfg *config.Config) error {
 	sqlDb.SetMaxIdleConns(15)
 	sqlDb.SetMaxOpenConns(100)
 	sqlDb.SetConnMaxLifetime(5 * time.Minute)
-
+	MigrateEntities(dbClient)
 	log.Println("Db connection established")
 	return nil
 }

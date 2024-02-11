@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/atefeh-syf/yumigo/internal"
-	"github.com/atefeh-syf/yumigo/internal/wallet/data/models"
+	"github.com/atefeh-syf/yumigo/pkg/wallet/data/models"
 )
 
 type Service interface {
-    Get(ctx context.Context, userId string ,filters ...internal.Filter) (models.Wallet, error)
+	Get(ctx context.Context, userId string, filters ...internal.Filter) (models.Wallet, error)
 	ServiceStatus(ctx context.Context) (int, error)
 }

@@ -10,8 +10,8 @@ import (
 
 	//pb "github.com/atefeh-syf/yumigo/api/v1/pb/wallet"
 	"github.com/atefeh-syf/yumigo/config"
-	"github.com/atefeh-syf/yumigo/internal/wallet/data/db"
 	"github.com/atefeh-syf/yumigo/pkg/wallet"
+	"github.com/atefeh-syf/yumigo/pkg/wallet/data/db"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/endpoints"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/transport"
 
@@ -64,7 +64,6 @@ func main() {
 	// baseServer := grpc.NewServer(grpc.UnaryInterceptor(kitgrpc.Interceptor))
 	// pb.RegisterWalletServer(baseServer, grpcServer)
 	// baseServer.Serve(grpcListener)
-
 
 	// This function just sits and waits for ctrl-C.
 	cancelInterrupt := make(chan struct{})

@@ -1,8 +1,6 @@
 package dto
 
-import "github.com/atefeh-syf/yumigo/internal/wallet/data/models"
-
-
+import "github.com/atefeh-syf/yumigo/pkg/wallet/data/models"
 
 type TransactionAction struct {
 	Amount float64 `json:"amount" binding:"required,min=1"`
