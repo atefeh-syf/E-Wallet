@@ -1,69 +1,75 @@
-package wallet
+package user
 
 import (
-	"context"
-	"net/http"
-	"os"
-	"strconv"
-	"sync"
+	"fmt"
 
-	"github.com/atefeh-syf/yumigo/internal"
-	"github.com/atefeh-syf/yumigo/pkg/wallet/data/models"
-	"github.com/atefeh-syf/yumigo/pkg/wallet/data/repositories"
-	"github.com/go-kit/log"
-	//"github.com/lithammer/shortuuid/v3"
+	"github.com/atefeh-syf/yumigo/pkg/user/api/middlewares"
+	"github.com/atefeh-syf/yumigo/pkg/user/api/routers"
+	validation "github.com/atefeh-syf/yumigo/pkg/user/api/validations"
+	"github.com/atefeh-syf/yumigo/pkg/user/config"
+	"github.com/atefeh-syf/yumigo/pkg/user/pkg/logging"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
-type WalletService struct {
-	Repository *repositories.WalletRepository
-	WaitGroup  *sync.WaitGroup
-}
+var logger = logging.NewLogger(config.GetConfig())
 
-func NewWalletService() *WalletService {
-	WalletRepository := repositories.NewWalletRepository()
-	return &WalletService{
-		Repository: WalletRepository,
-		WaitGroup:  WalletRepository.WaitGroup,
+func InitServer(cfg *config.Config) {
+	gin.SetMode(cfg.Server.RunMode)
+	r := gin.New()
+	RegisterValidators()
+
+	r.Use(middlewares.Cors(cfg))
+	r.Use(gin.Logger())
+
+	RegisterRoutes(r, cfg)
+	logger := logging.NewLogger(cfg)
+	logger.Info(logging.General, logging.Startup, "Started", nil)
+	err := r.Run(fmt.Sprintf(":%s", cfg.Server.InternalPort))
+	if err != nil {
+		logger.Fatal(logging.General, logging.Startup, err.Error(), nil)
 	}
 }
 
-func (w *WalletService) ServiceStatus(_ context.Context) (int, error) {
-	logger.Log("Checking the Service health...")
-	return http.StatusOK, nil
-}
+func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
+	api := r.Group("/api")
 
-var logger log.Logger
+	v1 := api.Group("/v1")
+	{
+		// Test
+		health := v1.Group("/health")
+		test_router := v1.Group("/test" /*middlewares.Authentication(cfg), middlewares.Authorization([]string{"admin"})*/)
 
-func init() {
-	logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
-	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
-}
+		// User
+		users := v1.Group("/users")
 
-func (w *WalletService) Get(_ context.Context, userId string, filters ...internal.Filter) (models.Wallet, error) {
-	channel := make(chan models.DBResponse) //channel for db response
+		// Test
+		routers.Health(health)
+		routers.TestRouter(test_router)
+		// User
+		routers.User(users, cfg)
 
-	wallet := models.Wallet{}
-	var err error
-
-	w.WaitGroup.Add(1)
-	user_id, _ := strconv.Atoi(userId)
-	go w.Repository.FindWalletByUserId(user_id, channel)
-
-	//wait for process to finish and close the channel
-	WaitAndCloseChannel(w.WaitGroup, channel)
-
-	//get data from channel
-	for c := range channel {
-		wallet = c.Data.(models.Wallet)
-		err = c.Error
+		r.Static("/static", "./uploads")
 	}
 
-	return wallet, err
+	v2 := api.Group("/v2")
+	{
+		health := v2.Group("/health")
+		routers.Health(health)
+	}
 }
 
-func WaitAndCloseChannel(wg *sync.WaitGroup, channel chan models.DBResponse) {
-	go func(wg *sync.WaitGroup, channel chan models.DBResponse) {
-		wg.Wait()
-		close(channel)
-	}(wg, channel)
+func RegisterValidators() {
+	val, ok := binding.Validator.Engine().(*validator.Validate)
+	if ok {
+		err := val.RegisterValidation("mobile", validation.IranianMobileNumberValidator, true)
+		if err != nil {
+			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
+		}
+		err = val.RegisterValidation("password", validation.PasswordValidator, true)
+		if err != nil {
+			logger.Error(logging.Validation, logging.Startup, err.Error(), nil)
+		}
+	}
 }

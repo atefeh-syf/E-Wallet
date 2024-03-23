@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/atefeh-syf/yumigo/config"
+	"github.com/atefeh-syf/yumigo/pkg/user/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

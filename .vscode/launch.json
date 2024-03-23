@@ -6,7 +6,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/cmd/wallet_service",
+      "program": "${workspaceFolder}/cmd/api_gateway",
     }
   ]
 }
