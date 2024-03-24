@@ -4,18 +4,20 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-	"io"
-	"github.com/gorilla/mux"
 	"github.com/atefeh-syf/yumigo/config"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/data/db"
+	"github.com/gorilla/mux"
+	"io"
+	"log"
+	"net/http"
 )
 
 // Demo credentials
 const (
-	username = "test"
-	password = "password"
+	username             = "test"
+	password             = "password"
+	userServiceAddress   = "http://localhost:5005"
+	userServiceApiPrefix = "/api/v1/users"
 )
 
 func main() {
@@ -23,10 +25,13 @@ func main() {
 
 	// Define routes
 	//router.HandleFunc("/login", loginHandler).Methods("POST")
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Sprintf("test")
-	}).Methods("GET")
-	router.HandleFunc("/api/v1/health", authenticate(proxy("/api/v1/health", "http://localhost:5005"))).Methods("GET")
+
+	// user service routes
+	router.HandleFunc("/api/v1/health", authenticate(proxy("/api/v1/health", userServiceAddress))).Methods("GET")
+	router.HandleFunc("/api/v1/users/login", authenticate(proxy(userServiceApiPrefix+"/login", userServiceAddress))).Methods("POST")
+	router.HandleFunc("/api/v1/users/send-otp", authenticate(proxy(userServiceApiPrefix+"/send-otp", userServiceAddress))).Methods("POST")
+	router.HandleFunc("/api/v1/users/register-by-username", authenticate(proxy(userServiceApiPrefix+"/register-by-username", userServiceAddress))).Methods("POST")
+
 	router.HandleFunc("/wallet", authenticate(proxy("/wallet", "http://localhost:8081"))).Methods("GET")
 
 	fmt.Println("API Gateway is running on :8080")

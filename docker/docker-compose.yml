@@ -241,10 +241,9 @@ services:
     networks:
       - yamigo_network
       
-  yamigo:
-    build: ../
-    image: yamigo-api:latest
-    container_name: yumigo1
+  api_gateway:
+    image: api_gateway:latest
+    container_name: api_gateway
     environment:
       - PORT=9003
     ports:
