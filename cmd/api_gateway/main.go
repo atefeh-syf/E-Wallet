@@ -25,7 +25,9 @@ func main() {
 
 	// Define routes
 	//router.HandleFunc("/login", loginHandler).Methods("POST")
-
+	router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("test")
+	}).Methods("GET")
 	// user service routes
 	router.HandleFunc("/api/v1/health", authenticate(proxy("/api/v1/health", userServiceAddress))).Methods("GET")
 	router.HandleFunc("/api/v1/users/login", authenticate(proxy(userServiceApiPrefix+"/login", userServiceAddress))).Methods("POST")
@@ -34,8 +36,8 @@ func main() {
 
 	router.HandleFunc("/wallet", authenticate(proxy("/wallet", "http://localhost:8081"))).Methods("GET")
 
-	fmt.Println("API Gateway is running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Println("API Gateway is running on :5000")
+	log.Fatal(http.ListenAndServe(":5000", router))
 	cfg := config.GetConfig()
 	_ = db.InitDb(cfg)
 }
