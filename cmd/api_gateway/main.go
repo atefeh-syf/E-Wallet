@@ -16,7 +16,7 @@ import (
 const (
 	username             = "test"
 	password             = "password"
-	userServiceAddress   = "http://localhost:5005"
+	userServiceAddress   = "http://user_service:5001"
 	userServiceApiPrefix = "/api/v1/users"
 )
 
@@ -28,6 +28,7 @@ func main() {
 	router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("test")
 	}).Methods("GET")
+	
 	// user service routes
 	router.HandleFunc("/api/v1/health", authenticate(proxy("/api/v1/health", userServiceAddress))).Methods("GET")
 	router.HandleFunc("/api/v1/users/login", authenticate(proxy(userServiceApiPrefix+"/login", userServiceAddress))).Methods("POST")

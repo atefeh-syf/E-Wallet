@@ -86,39 +86,6 @@ services:
     depends_on:
       - elasticsearch
 
-  ####################### POSTGRES #######################
-  postgres:
-    image: postgres
-    container_name: postgres_container
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: yamigo_db
-      PGDATA: /data/postgres
-    volumes:
-      - postgres:/data/postgres
-    ports:
-      - "5432:5432"
-    networks:
-      - yamigo_network
-    restart: unless-stopped
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin_container
-    environment:
-      PGADMIN_DEFAULT_EMAIL: atefeh.syf@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: 123456
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-    ports:
-      - "8090:80"
-    networks:
-      - yamigo_network
-    restart: unless-stopped
-    depends_on:
-      - postgres
-  
   ####################### REDIS #######################
   redis:
     image: redis:latest
@@ -128,7 +95,7 @@ services:
       - ./redis/redis.conf:/etc/redis/redis.conf
       - redis:/etc/redis 
     ports:
-      - "6379:6379"
+      - "6380:6380"
     networks:
       - yamigo_network
 ####################rabbitmq###############################
@@ -157,115 +124,80 @@ services:
     networks:
       - yamigo_network
 
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus/:/etc/prometheus/
-      - prometheus_data:/prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
-    ports:
-      - 9090:9090
-    links:
-      - alertmanager:alertmanager
-    networks:
-      - yamigo_network
-    restart: always
-
-  node-exporter:
-    image: prom/node-exporter
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - "--path.procfs=/host/proc"
-      - "--path.sysfs=/host/sys"
-      - --collector.filesystem.ignored-mount-points
-      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
-    ports:
-      - 9100:9100
-    networks:
-      - yamigo_network
-    restart: always
-    deploy:
-      mode: global
-
-  alertmanager:
-    image: prom/alertmanager
-    ports:
-      - 9093:9093
-    volumes:
-      - ./alertmanager/:/etc/alertmanager/
-    networks:
-      - yamigo_network
-    restart: always
-    command:
-      - "--config.file=/etc/alertmanager/config.yml"
-      - "--storage.path=/alertmanager"
-   
-  grafana:
-    image: grafana/grafana
-    user: "472"
-    depends_on:
-      - prometheus
-    ports:
-      - 3000:3000
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning/:/etc/grafana/provisioning/
-    env_file:
-      - ./grafana/config.monitoring
-    networks:
-      - yamigo_network 
-    restart: always
-
-  jaeger:
-    container_name: jaeger_container
-    restart: always
-    image: jaegertracing/all-in-one:1.21
+####################### user_service_db POSTGRES #######################
+  user_service_db:
+    image: postgres
+    container_name: user_service_db_container
     environment:
-      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: user_db
+      PGDATA: /data/postgres
+    volumes:
+      - user_service_db:/data/postgres
     ports:
-      - 5775:5775/udp
-      - 6831:6831/udp
-      - 6832:6832/udp
-      - 5778:5778
-      - 16686:16686
-      - 14268:14268
-      - 14250:14250
-      - 9411:9411
+      - "5432:5432"
     networks:
       - yamigo_network
-      
+    restart: unless-stopped
+####################### pgAdmin #######################
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: atefeh.syf@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "8090:80"
+    networks:
+      - yamigo_network
+    restart: unless-stopped
+    depends_on:
+      - user_service_db
+  
+####################### api_gateway service #######################
   api_gateway:
     image: api_gateway:latest
     container_name: api_gateway
     environment:
-      - PORT=9003
+      - PORT=5000
     ports:
-      - 9003:5000
+      - 5000:5000
     networks:
       - yamigo_network
     volumes:
       - logs:/app/logs
     depends_on:
-      - postgres
+      - user_service_db
+      - elasticsearch
+      - user_service
+    restart: unless-stopped
+####################### user_service service #######################
+  user_service:
+    image: user_service:latest
+    container_name: user_service
+    environment:
+      - PORT=5001
+    ports:
+      - 5001:5001
+    networks:
+      - yamigo_network
+    volumes:
+      - logs:/app/logs
+    depends_on:
+      - user_service_db
       - elasticsearch
     restart: unless-stopped
 ####################### VOLUME AND NETWORKS #######################
 volumes:
-  postgres:
+  user_service_db:
   pgadmin:
   redis:
   logs:
   setup:
   elasticsearch:
-  prometheus_data:
-  grafana_data:
 
 networks:
   yamigo_network:
