@@ -4,6 +4,7 @@ import (
 	"github.com/atefeh-syf/yumigo/pkg/user"
 	"github.com/atefeh-syf/yumigo/pkg/user/config"
 	"github.com/atefeh-syf/yumigo/pkg/user/data/db"
+	"github.com/atefeh-syf/yumigo/pkg/user/data/db/migrations"
 )
 
 // @securityDefinitions.apikey AuthBearer
@@ -20,6 +21,6 @@ func main() {
 	// if err != nil {
 	// 	logger.Fatal(logging.Postgres, logging.Startup, err.Error(), nil)
 	// }
-	//migrations.Up_1()
+	migrations.Up_1()
 	user.InitServer(cfg)
 }
