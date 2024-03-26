@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -137,11 +138,12 @@ func LoadConfig (fileName string, fileType string) (*viper.Viper, error) {
 }
 
 func getConfigPath(env string) string {
+	fmt.Println(env)
 	if env == "docker" {
 		return "/app/config/config-docker"
 	} else if env == "production" {
 		return "/config/config-production"
 	} else {
-		return "../../config/config-development"
+		return "../../pkg/user/config/config-development.yml"
 	}
 }

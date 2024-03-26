@@ -1,6 +1,6 @@
 server:
-  internalPort: 5005
-  externalPort: 5005
+  internalPort: 5001
+  externalPort: 5001
   runMode: debug
 logger:
   filePath: ../logs/
@@ -14,7 +14,7 @@ postgres:
   port: 5432
   user: postgres
   password: admin
-  dbName: yamigo_db
+  dbName: user_db
   sslMode: disable
   maxIdleConns: 15
   maxOpenConns: 100

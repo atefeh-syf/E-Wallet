@@ -3,7 +3,7 @@ package user
 import (
 	"fmt"
 
-	"github.com/atefeh-syf/yumigo/pkg/user/api/middlewares"
+	//"github.com/atefeh-syf/yumigo/pkg/user/api/middlewares"
 	"github.com/atefeh-syf/yumigo/pkg/user/api/routers"
 	validation "github.com/atefeh-syf/yumigo/pkg/user/api/validations"
 	"github.com/atefeh-syf/yumigo/pkg/user/config"
@@ -20,7 +20,7 @@ func InitServer(cfg *config.Config) {
 	r := gin.New()
 	RegisterValidators()
 
-	r.Use(middlewares.Cors(cfg))
+	//r.Use(middlewares.Cors(cfg))
 	r.Use(gin.Logger())
 
 	RegisterRoutes(r, cfg)

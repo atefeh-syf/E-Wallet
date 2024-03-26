@@ -1,6 +1,6 @@
 server:
-  internalPort: 5010
-  externalPort: 5010
+  internalPort: 5001
+  externalPort: 5001
   runMode: release
 logger:
   filePath: logs/
@@ -10,11 +10,11 @@ logger:
 cors:
   allowOrigins: "*"
 postgres:
-  host: localhost
+  host: user_service_db_container
   port: 5432
   user: postgres
   password: admin
-  dbName: yamigo_db
+  dbName: user_db
   sslMode: disable
   maxIdleConns: 15
   maxOpenConns: 100
