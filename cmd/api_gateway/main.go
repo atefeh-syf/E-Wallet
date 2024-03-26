@@ -4,18 +4,21 @@ package main
 
 import (
 	"fmt"
-	"github.com/atefeh-syf/yumigo/config"
-	"github.com/atefeh-syf/yumigo/pkg/wallet/data/db"
-	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/atefeh-syf/yumigo/config"
+	"github.com/atefeh-syf/yumigo/pkg/user/api/middlewares"
+	"github.com/atefeh-syf/yumigo/pkg/wallet/data/db"
+	"github.com/gorilla/mux"
 )
 
 // Demo credentials
 const (
-	username             = "test"
-	password             = "password"
+	username           = "test"
+	password           = "password"
+	//userServiceAddress = "http://localhost:5001"
 	userServiceAddress   = "http://user_service:5001"
 	userServiceApiPrefix = "/api/v1/users"
 )
@@ -28,12 +31,12 @@ func main() {
 	router.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("test")
 	}).Methods("GET")
-	
+
 	// user service routes
 	router.HandleFunc("/api/v1/health", authenticate(proxy("/api/v1/health", userServiceAddress))).Methods("GET")
-	router.HandleFunc("/api/v1/users/login", authenticate(proxy(userServiceApiPrefix+"/login", userServiceAddress))).Methods("POST")
+	router.HandleFunc("/api/v1/users/login", proxy(userServiceApiPrefix+"/login", userServiceAddress)).Methods("POST")
 	router.HandleFunc("/api/v1/users/send-otp", authenticate(proxy(userServiceApiPrefix+"/send-otp", userServiceAddress))).Methods("POST")
-	router.HandleFunc("/api/v1/users/register-by-username", authenticate(proxy(userServiceApiPrefix+"/register-by-username", userServiceAddress))).Methods("POST")
+	router.HandleFunc("/api/v1/users/register-by-username", proxy(userServiceApiPrefix+"/register-by-username", userServiceAddress)).Methods("POST")
 
 	router.HandleFunc("/wallet", authenticate(proxy("/wallet", "http://localhost:8081"))).Methods("GET")
 
@@ -43,31 +46,15 @@ func main() {
 	_ = db.InitDb(cfg)
 }
 
-// func loginHandler(w http.ResponseWriter, r *http.Request) {
-// 	r.ParseForm()
-// 	user := r.FormValue("username")
-// 	pass := r.FormValue("password")
-
-// 	if user == username && pass == password {
-// 		http.SetCookie(w, &http.Cookie{
-// 			Name:  "auth",
-// 			Value: "true",
-// 		})
-// 		http.Redirect(w, r, "/user", http.StatusSeeOther)
-// 	} else {
-// 		w.WriteHeader(http.StatusUnauthorized)
-// 		fmt.Fprintln(w, "Invalid credentials")
-// 	}
-// }
-
 func authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// cookie, err := r.Cookie("auth")
-		// if err != nil || cookie.Value != "true" {
-		// 	http.Redirect(w, r, "/login", http.StatusSeeOther)
-		// 	return
-		// }
-
+		token := r.Header.Get("Authorization")
+		//c := context.Background()
+		err := middlewares.Authentication(token, r.Context())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
 		next(w, r)
 	}
 }
@@ -105,5 +92,6 @@ func proxy(path, target string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
 		}
+
 	}
 }
