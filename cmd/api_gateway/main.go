@@ -3,12 +3,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 
 	"github.com/atefeh-syf/yumigo/config"
+	"github.com/atefeh-syf/yumigo/pkg/user/api/helper"
 	"github.com/atefeh-syf/yumigo/pkg/user/api/middlewares"
 	"github.com/atefeh-syf/yumigo/pkg/wallet/data/db"
 	"github.com/gorilla/mux"
@@ -49,10 +51,12 @@ func main() {
 func authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
-		//c := context.Background()
+		
 		err := middlewares.Authentication(token, r.Context())
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(helper.GenerateBaseResponseWithError(nil, false, helper.AuthError, err))
 			return
 		}
 		next(w, r)
@@ -69,7 +73,7 @@ func proxy(path, target string) http.HandlerFunc {
 		}
 
 		req.Header = r.Header
-
+		w.Header().Set("Content-Type", "application/json")
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
