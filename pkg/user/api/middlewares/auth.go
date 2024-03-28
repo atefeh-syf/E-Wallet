@@ -5,13 +5,12 @@ import (
 	"strings"
 
 	"github.com/atefeh-syf/yumigo/pkg/user/config"
-	"github.com/atefeh-syf/yumigo/pkg/user/constants"
 	"github.com/atefeh-syf/yumigo/pkg/user/pkg/service_errors"
 	"github.com/atefeh-syf/yumigo/pkg/user/services"
 	"github.com/golang-jwt/jwt"
 )
 
-func Authentication(authToken string, c context.Context) error {
+func Authentication(authToken string, c context.Context) (error , map[string]interface{}) {
 	cfg := config.GetConfig()
 	tokenService := services.NewTokenService(cfg)
 	
@@ -33,17 +32,7 @@ func Authentication(authToken string, c context.Context) error {
 		}
 	}
 	if err != nil {
-		return err
+		return err, map[string]interface{}{}
 	}
-
-	context.WithValue(c, constants.UserIdKey, claimMap[constants.UserIdKey])
-	context.WithValue(c, constants.FirstNameKey, claimMap[constants.FirstNameKey])
-	context.WithValue(c, constants.LastNameKey, claimMap[constants.LastNameKey])
-	context.WithValue(c, constants.UsernameKey, claimMap[constants.UsernameKey])
-	context.WithValue(c, constants.EmailKey, claimMap[constants.EmailKey])
-	context.WithValue(c, constants.MobileNumberKey, claimMap[constants.MobileNumberKey])
-	context.WithValue(c, constants.RolesKey, claimMap[constants.RolesKey])
-	context.WithValue(c, constants.ExpireTimeKey, claimMap[constants.ExpireTimeKey])
-
-	return nil
+	return nil, claimMap
 }
