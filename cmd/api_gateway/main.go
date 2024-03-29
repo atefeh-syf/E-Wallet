@@ -83,35 +83,46 @@ func authenticate(next http.HandlerFunc) http.HandlerFunc {
 
 func proxy(path, target string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println()
+		
 		targetURL := target + r.URL.Path
+		var err error
+		var req *http.Request
 
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+		if r.Method == "POST" ||  r.Method == "PUT" {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 
-		var requestBody map[string]interface{}
-		err = json.Unmarshal(body, &requestBody)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		requestBody["user_id"] = r.Context().Value(constants.UserIdKey)
-		requestBody[constants.UserIdKey] = r.Context().Value(constants.UserIdKey)
-		modifiedBody, err := json.Marshal(requestBody)
+			var requestBody map[string]interface{}
+			err = json.Unmarshal(body, &requestBody)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			requestBody["user_id"] = r.Context().Value(constants.UserIdKey)
+			requestBody[constants.UserIdKey] = r.Context().Value(constants.UserIdKey)
+			modifiedBody, err := json.Marshal(requestBody)
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		req, err := http.NewRequest(r.Method, targetURL, bytes.NewBuffer(modifiedBody))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadGateway)
-			return
-		}
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
+			req, err = http.NewRequest(r.Method, targetURL, bytes.NewBuffer(modifiedBody))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadGateway)
+				return
+			}
+		} else {
+			req, err = http.NewRequest(r.Method, targetURL, r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadGateway)
+				return
+			}
+		}
+		
 		req.Header = r.Header
 		w.Header().Set("Content-Type", "application/json")
 		client := &http.Client{}
