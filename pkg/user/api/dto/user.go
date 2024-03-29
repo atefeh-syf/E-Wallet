@@ -28,3 +28,28 @@ type LoginByUsernameRequest struct {
 	Username string `json:"username" binding:"required,min=5"`
 	Password string `json:"password" binding:"required,min=6"`
 }
+
+
+type UserAddressRequest struct {
+	Address string `json:"address" binding:"required"`
+	Phone string `json:"phone" binding:"required"`
+}
+
+type CreateUserAddressModelRequest struct {
+	Address string `json:"address" binding:"required"`
+	Phone string `json:"phone" binding:"required"`
+	UserId int `json:"UserId"`
+}	
+
+
+type UpdateUserAddressModelRequest struct {
+	Address string `json:"address" binding:"required"`
+	Phone string `json:"phone" binding:"required"`
+}
+
+type UserAddressResponse struct {
+	Id                 int                        `json:"id"`
+	Address string `json:"address"`
+	Phone string `json:"phone"`
+	UserId int `json:"user_id"`
+}

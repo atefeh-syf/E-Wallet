@@ -6,7 +6,8 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/cmd/api_gateway",
+     //"program": "${workspaceFolder}/cmd/api_gateway",
+      "program": "${workspaceFolder}/cmd/user_service",
     }
   ]
 }

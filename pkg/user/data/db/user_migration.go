@@ -11,7 +11,6 @@ func MigrateEntities(db *gorm.DB) error {
 		&models.User{},
 		&models.Role{},
 		&models.UserRole{},
-		&models.Address{},
 		&models.UserAddress{},
 	)
 }

@@ -98,6 +98,7 @@ func proxy(path, target string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		requestBody["user_id"] = r.Context().Value(constants.UserIdKey)
 		requestBody[constants.UserIdKey] = r.Context().Value(constants.UserIdKey)
 		modifiedBody, err := json.Marshal(requestBody)
 

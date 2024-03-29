@@ -44,11 +44,16 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config) {
 		// User
 		users := v1.Group("/users")
 
+		// user_address
+		userAddress := v1.Group("/user_address")
+
 		// Test
 		routers.Health(health)
 		routers.TestRouter(test_router)
 		// User
 		routers.User(users, cfg)
+		// user_address
+		routers.UserAddress(userAddress, cfg)
 
 		r.Static("/static", "./uploads")
 	}

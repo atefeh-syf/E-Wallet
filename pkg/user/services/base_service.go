@@ -38,12 +38,9 @@ func NewBaseService[T any, Tc any, Tu any, Tr any](cfg *config.Config) *BaseServ
 }
 
 func (s *BaseService[T, Tc, Tu, Tr]) Create(ctx context.Context, req *Tc) (*Tr, error) {
-
 	model, _ := common.TypeConverter[T](req)
 	tx := s.Database.WithContext(ctx).Begin()
-	err := tx.
-		Create(model).
-		Error
+	err := tx.Create(model).Error
 	if err != nil {
 		tx.Rollback()
 		s.Logger.Error(logging.Postgres, logging.Insert, err.Error(), nil)
