@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/atefeh-syf/yumigo/config"
 	"github.com/atefeh-syf/yumigo/pkg/user/api/helper"
@@ -68,6 +69,7 @@ func authenticate(next http.HandlerFunc) http.HandlerFunc {
 			json.NewEncoder(w).Encode(helper.GenerateBaseResponseWithError(nil, false, helper.AuthError, err))
 			return
 		}
+		
 		c = context.WithValue(c, constants.UserIdKey, claimMap[constants.UserIdKey])
 		c = context.WithValue(c, constants.FirstNameKey, claimMap[constants.FirstNameKey])
 		c = context.WithValue(c, constants.LastNameKey, claimMap[constants.LastNameKey])
@@ -83,12 +85,13 @@ func authenticate(next http.HandlerFunc) http.HandlerFunc {
 
 func proxy(path, target string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		
+
 		targetURL := target + r.URL.Path
 		var err error
 		var req *http.Request
 
-		if r.Method == "POST" ||  r.Method == "PUT" {
+		UserId := r.Context().Value(constants.UserIdKey)
+		if r.Method == "POST" || r.Method == "PUT" {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
@@ -101,8 +104,8 @@ func proxy(path, target string) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			requestBody["user_id"] = r.Context().Value(constants.UserIdKey)
-			requestBody[constants.UserIdKey] = r.Context().Value(constants.UserIdKey)
+			requestBody["user_id"] = UserId
+			requestBody[constants.UserIdKey] = UserId
 			modifiedBody, err := json.Marshal(requestBody)
 
 			if err != nil {
@@ -122,8 +125,15 @@ func proxy(path, target string) http.HandlerFunc {
 				return
 			}
 		}
-		
+
 		req.Header = r.Header
+		
+		if UserId != nil {
+			UserId = strconv.FormatFloat(UserId.(float64), 'f', -1, 64)
+			fmt.Println(UserId)
+			req.Header.Set(constants.UserIdKey, UserId.(string))
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		client := &http.Client{}
 		resp, err := client.Do(req)
