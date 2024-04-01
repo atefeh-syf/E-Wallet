@@ -33,7 +33,6 @@ func NewUserAddressService(cfg *config.Config) *UserAddressService {
 }
 
 func (s *UserAddressService) Create(ctx context.Context, req *dto.CreateUserAddressModelRequest) (*dto.UserAddressResponse, error) {
-	//req.UserId = 1
 	return s.base.Create(ctx, req)
 }
 

@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -21,10 +22,12 @@ type BaseModel struct {
 
 func (m *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
 	value := tx.Statement.Context.Value("UserId")
+
 	var userId = -1
 	
 	if value != nil {
-		userId = int(value.(float64))
+		UserIdInt, _ := strconv.Atoi(value.(string))
+		userId = UserIdInt
 	}
 	m.CreatedAt = time.Now().UTC()
 	m.CreatedBy = userId
@@ -36,7 +39,8 @@ func (m *BaseModel) BeforeUpdate(tx *gorm.DB) (err error) {
 	var userId = &sql.NullInt64{Valid: false}
 	
 	if value != nil {
-		userId = &sql.NullInt64{Valid: true, Int64: int64(value.(float64))}
+		UserIdInt, _ := strconv.ParseInt(value.(string), 10, 64)
+		userId = &sql.NullInt64{Valid: true, Int64: UserIdInt}
 	}
 	m.ModifiedAt = sql.NullTime{Time: time.Now().UTC(), Valid: true}
 	m.ModifiedBy = userId

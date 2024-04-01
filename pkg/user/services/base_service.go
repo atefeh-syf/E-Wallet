@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/atefeh-syf/yumigo/pkg/user/api/dto"
 	"github.com/atefeh-syf/yumigo/pkg/user/common"
 	"github.com/atefeh-syf/yumigo/pkg/user/config"
 	"github.com/atefeh-syf/yumigo/pkg/user/constants"
 	"github.com/atefeh-syf/yumigo/pkg/user/data/db"
 	"github.com/atefeh-syf/yumigo/pkg/user/data/models"
-	"github.com/atefeh-syf/yumigo/pkg/user/api/dto"
 	"github.com/atefeh-syf/yumigo/pkg/user/pkg/logging"
 	"github.com/atefeh-syf/yumigo/pkg/user/pkg/service_errors"
 	"gorm.io/gorm"
@@ -52,13 +53,15 @@ func (s *BaseService[T, Tc, Tu, Tr]) Create(ctx context.Context, req *Tc) (*Tr, 
 }
 
 func (s *BaseService[T, Tc, Tu, Tr]) Update(ctx context.Context, id int, req *Tu) (*Tr, error) {
+	UserIdStr, _ := ctx.Value(constants.UserIdKey).(string)
+    UserId, _ := strconv.ParseInt(UserIdStr, 10, 64)
 
 	updateMap, _ := common.TypeConverter[map[string]interface{}](req)
 	snakeMap := map[string]interface{}{}
 	for k, v := range *updateMap {
 		snakeMap[common.ToSnakeCase(k)] = v
 	}
-	snakeMap["modified_by"] = &sql.NullInt64{Int64: int64(ctx.Value(constants.UserIdKey).(float64)), Valid: true}
+	snakeMap["modified_by"] = &sql.NullInt64{Int64: UserId, Valid: true}
 	snakeMap["modified_at"] = sql.NullTime{Valid: true, Time: time.Now().UTC()}
 	model := new(T)
 	tx := s.Database.WithContext(ctx).Begin()
@@ -76,18 +79,25 @@ func (s *BaseService[T, Tc, Tu, Tr]) Update(ctx context.Context, id int, req *Tu
 }
 
 func (s *BaseService[T, Tc, Tu, Tr]) Delete(ctx context.Context, id int) error {
-	tx := s.Database.WithContext(ctx).Begin()
-
-	model := new(T)
-
-	deleteMap := map[string]interface{}{
-		"deleted_by": &sql.NullInt64{Int64: int64(ctx.Value(constants.UserIdKey).(float64)), Valid: true},
-		"deleted_at": sql.NullTime{Valid: true, Time: time.Now().UTC()},
-	}
-
 	if ctx.Value(constants.UserIdKey) == nil {
 		return &service_errors.ServiceError{EndUserMessage: service_errors.PermissionDenied}
 	}
+	UserIdStr, ok := ctx.Value(constants.UserIdKey).(string)
+    if !ok {
+		return &service_errors.ServiceError{EndUserMessage: service_errors.PermissionDenied}
+    }
+    UserId, err := strconv.ParseInt(UserIdStr, 10, 64)
+    if err != nil {
+		return &service_errors.ServiceError{EndUserMessage: service_errors.PermissionDenied}
+    }
+	model := new(T)
+
+	deleteMap := map[string]interface{}{
+		"deleted_by": &sql.NullInt64{Int64: UserId, Valid: true},
+		"deleted_at": sql.NullTime{Valid: true, Time: time.Now().UTC()},
+	}
+
+	tx := s.Database.WithContext(ctx).Begin()
 	if cnt := tx.
 		Model(model).
 		Where("id = ? and deleted_by is null", id).
