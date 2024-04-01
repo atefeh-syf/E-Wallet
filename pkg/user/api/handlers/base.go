@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"github.com/atefeh-syf/yumigo/pkg/user/api/helper"
 	"github.com/atefeh-syf/yumigo/pkg/user/config"
+	"github.com/atefeh-syf/yumigo/pkg/user/constants"
 	"github.com/atefeh-syf/yumigo/pkg/user/pkg/logging"
+	"github.com/gin-gonic/gin"
 )
 
 
@@ -17,6 +18,7 @@ var logger = logging.NewLogger(config.GetConfig())
 
 
 func Create[Ti any,To any](c *gin.Context, caller func(ctx context.Context, req *Ti)(*To, error)){
+	c.Set(constants.UserIdKey,c.GetHeader(constants.UserIdKey))
 	req := new(Ti)
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
@@ -35,6 +37,7 @@ func Create[Ti any,To any](c *gin.Context, caller func(ctx context.Context, req 
 }
 
 func Update[Ti any,To any](c *gin.Context, caller func(ctx context.Context,id int, req *Ti)(*To, error)){
+	c.Set(constants.UserIdKey,c.GetHeader(constants.UserIdKey))
 	id, _ := strconv.Atoi(c.Params.ByName("id"))
 	req :=new(Ti)
 	err := c.ShouldBindJSON(&req)
@@ -54,6 +57,8 @@ func Update[Ti any,To any](c *gin.Context, caller func(ctx context.Context,id in
 }
 
 func Delete(c *gin.Context, caller func(ctx context.Context,id int)error){
+	c.Set(constants.UserIdKey,c.GetHeader(constants.UserIdKey))
+
 	id, _ := strconv.Atoi(c.Params.ByName("id"))
 	if id == 0 {
 		c.AbortWithStatusJSON(http.StatusNotFound,
